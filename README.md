@@ -1,11 +1,6 @@
 # Filament Header Filters
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/leek/filament-header-filters.svg?style=flat-square)](https://packagist.org/packages/leek/filament-header-filters)
-[![Total Downloads](https://img.shields.io/packagist/dt/leek/filament-header-filters.svg?style=flat-square)](https://packagist.org/packages/leek/filament-header-filters)
-
 Inline header filters for [Filament](https://filamentphp.com/) tables. Attach any `BaseFilter` to a column header — select dropdowns, date pickers, min/max ranges, custom multi-field schemas — as a richer alternative to `searchable(isIndividual: true)`.
-
-This package is a free port of [filamentphp/filament#19432](https://github.com/filamentphp/filament/pull/19432).
 
 ## Screenshot
 
