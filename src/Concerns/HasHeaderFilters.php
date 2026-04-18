@@ -46,6 +46,36 @@ trait HasHeaderFilters
             'tableHeaderFiltersForm',
             $this->getTableHeaderFiltersForm(...),
         );
+
+        $this->seedHeaderFilterState($headerFilters);
+    }
+
+    /**
+     * @param  array<BaseFilter>  $headerFilters
+     */
+    protected function seedHeaderFilterState(array $headerFilters): void
+    {
+        $this->tableFilters ??= [];
+
+        foreach ($headerFilters as $filter) {
+            $filterName = $filter->getName();
+
+            if (array_key_exists($filterName, $this->tableFilters)) {
+                continue;
+            }
+
+            $state = [];
+
+            foreach ($filter->getSchemaComponents() as $component) {
+                if (! $component instanceof Field) {
+                    continue;
+                }
+
+                $state[$component->getName()] = $component->getDefaultState();
+            }
+
+            $this->tableFilters[$filterName] = $state;
+        }
     }
 
     public function getTableHeaderFiltersForm(): Schema
