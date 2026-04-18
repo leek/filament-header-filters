@@ -1,0 +1,13 @@
+.fi-ta-cell.fi-ta-header-filter-cell {
+    min-width: 12rem;
+    padding-inline: 0.75rem;
+    padding-block: 0.5rem;
+}
+
+.fi-ta-header-filter {
+    width: 100%;
+}
+
+.fi-ta-header-filter .fi-fo-field-wrp {
+    margin-block: 0;
+}
