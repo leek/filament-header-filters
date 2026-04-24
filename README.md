@@ -121,6 +121,41 @@ TextColumn::make('created_at')
 - Field labels inside header filters are auto-hidden; the column header acts as the label.
 - Hidden columns' header filters are not applied to the query.
 
+## Tips
+
+### Hide the filters button when only using header filters
+
+If a table has **only** header filters and no panel filters, hide the filters dropdown so the button doesn't render empty:
+
+```php
+use Filament\Tables\Enums\FiltersLayout;
+
+public function table(Table $table): Table
+{
+    return $table
+        ->filtersLayout(FiltersLayout::Hidden)
+        ->columns([
+            TextColumn::make('status')->headerFilter(/* ... */),
+            // ...
+        ]);
+}
+```
+
+### Filacheck false positive
+
+[Filacheck](https://github.com/LaravelDaily/FilaCheck)'s `missing-table-filters` rule doesn't recognize `->headerFilter()` and will flag tables that only use header filters. Publish the config and disable the rule:
+
+```bash
+php artisan vendor:publish --tag=filacheck-config
+```
+
+```php
+// config/filacheck.php
+'missing-table-filters' => [
+    'enabled' => false,
+],
+```
+
 ## How it works
 
 The package ships:
