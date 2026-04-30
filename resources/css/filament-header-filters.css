@@ -1,0 +1,40 @@
+.fi-ta-cell.fi-ta-header-filter-cell {
+    min-width: 12rem;
+    padding-inline: 0.75rem;
+    padding-block: 0.5rem;
+    position: relative;
+    overflow: visible;
+    z-index: 20;
+}
+
+tr:has(> .fi-ta-header-filter-cell) {
+    position: relative;
+    z-index: 20;
+}
+
+.fi-ta-header-filter {
+    width: 100%;
+}
+
+.fi-ta-header-filter .fi-fo-field-wrp {
+    margin-block: 0;
+}
+
+.fi-ta-content-ctn:has(.fi-ta-header-filter-cell .fi-dropdown-panel:not([style*="display: none"])),
+.fi-ta-content-ctn:has(.fi-ta-header-filter-cell .fi-fo-date-time-picker-panel:not([style*="display: none"])),
+.fi-ta-content-ctn:has(.fi-ta-header-filter-cell [x-ref="panel"]:not([style*="display: none"])),
+.fi-ta-content:has(.fi-ta-header-filter-cell .fi-dropdown-panel:not([style*="display: none"])),
+.fi-ta-content:has(.fi-ta-header-filter-cell .fi-fo-date-time-picker-panel:not([style*="display: none"])),
+.fi-ta-content:has(.fi-ta-header-filter-cell [x-ref="panel"]:not([style*="display: none"])),
+.fi-ta-ctn:has(.fi-ta-header-filter-cell .fi-dropdown-panel:not([style*="display: none"])),
+.fi-ta-ctn:has(.fi-ta-header-filter-cell .fi-fo-date-time-picker-panel:not([style*="display: none"])),
+.fi-ta-ctn:has(.fi-ta-header-filter-cell [x-ref="panel"]:not([style*="display: none"])) {
+    overflow: visible !important;
+}
+
+.fi-ta-header-filter .fi-fo-date-time-picker-panel,
+.fi-ta-header-filter .fi-dropdown-panel,
+.fi-ta-header-filter [x-ref="panel"] {
+    z-index: 50 !important;
+    isolation: isolate;
+}

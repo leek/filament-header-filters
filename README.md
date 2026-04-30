@@ -29,6 +29,28 @@ class ListOrders extends ListRecords
 }
 ```
 
+### Panel plugin (auto-wire all pages)
+
+If you'd rather not add the trait to every page — especially when sharing a [reusable `Table` schema class](https://filamentphp.com/docs/5.x/resources/code-quality-tips) across many resources — register the plugin on your panel and every page that uses `InteractsWithTable` will be wired automatically:
+
+```php
+use Filament\Panel;
+use Filament\PanelProvider;
+use Leek\FilamentHeaderFilters\HeaderFiltersPlugin;
+
+class AdminPanelProvider extends PanelProvider
+{
+    public function panel(Panel $panel): Panel
+    {
+        return $panel
+            // ...
+            ->plugin(HeaderFiltersPlugin::make());
+    }
+}
+```
+
+The plugin and the trait are interchangeable; using both on the same component is safe (header filter setup runs once per component).
+
 ### Styles
 
 If your panel uses a custom Vite theme (`->viteTheme(...)`), import the plugin CSS into your `theme.css` so Tailwind's build pipeline picks it up and cascade order is correct:

@@ -10,5 +10,5 @@
 <div
     {{ $attributes->class(['fi-ta-header-filter']) }}
 >
-    {{ $this->getTableHeaderFiltersForm()->getComponent($filterName)?->getChildSchema() }}
+    {{ \Leek\FilamentHeaderFilters\Support\HeaderFilters::form($this)->getComponent($filterName)?->getChildSchema() }}
 </div>
