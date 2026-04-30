@@ -7,12 +7,14 @@ namespace Leek\FilamentHeaderFilters\Concerns;
 use Filament\Forms\Components\Field;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Schema;
+use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Filters\BaseFilter;
+use Filament\Tables\Table;
 
 /**
  * @property-read Schema $tableHeaderFiltersForm
  *
- * @mixin \Filament\Tables\Concerns\InteractsWithTable
+ * @mixin InteractsWithTable
  */
 trait HasHeaderFilters
 {
@@ -112,7 +114,7 @@ trait HasHeaderFilters
             ->live();
     }
 
-    protected function hideHeaderFilterGroupsFromPanelForm(\Filament\Tables\Table $table): void
+    protected function hideHeaderFilterGroupsFromPanelForm(Table $table): void
     {
         $table->filtersFormSchema(static function (array $filters) use ($table): array {
             foreach ($filters as $filterName => $group) {

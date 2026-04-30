@@ -1,0 +1,12 @@
+{
+    "name": "filament-header-filters",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "vite build && rm -f resources/dist/filament-header-filters.js",
+        "dev": "vite build --watch"
+    },
+    "devDependencies": {
+        "vite": "^5.4.0"
+    }
+}
