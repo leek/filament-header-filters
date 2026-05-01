@@ -13,7 +13,8 @@ tr:has(> .fi-ta-header-filter-cell) {
 
 .fi-ta-header-filter {
     display: inline-block;
-    width: auto;
+    width: 100%;
+    min-width: 4rem;
     max-width: 100%;
 }
 
@@ -39,13 +40,29 @@ tr:has(> .fi-ta-header-filter-cell) {
     min-width: 0;
 }
 
+.fi-ta-header-filter .fi-sc.fi-sc-has-gap.fi-sc-dense.fi-grid.lg\:fi-grid-cols {
+    min-width: 8rem;
+}
+
+.fi-ta-header-filter .fi-sc.fi-sc-has-gap.fi-sc-dense.fi-grid.lg\:fi-grid-cols > .fi-grid-col {
+    min-width: 4rem;
+}
+
 .fi-ta-header-filter .fi-input-wrp-content-ctn {
     flex: 0 0 auto;
+    width: 100%;
 }
 
 .fi-ta-header-filter .fi-select-input-btn,
 .fi-ta-header-filter select.fi-select-input {
-    width: auto;
+    width: 100%;
+    min-width: 4rem;
+}
+
+.fi-ta-header-filter .fi-fo-date-time-picker,
+.fi-ta-header-filter .fi-fo-date-time-picker-trigger,
+.fi-ta-header-filter .fi-fo-date-time-picker-display-text-input {
+    width: 100%;
     min-width: 4rem;
 }
 
@@ -53,18 +70,6 @@ tr:has(> .fi-ta-header-filter-cell) {
     width: max-content;
     min-width: 12rem;
     max-width: min(24rem, calc(100vw - 2rem)) !important;
-}
-
-.fi-ta-content-ctn:has(.fi-ta-header-filter-cell .fi-dropdown-panel:not([style*="display: none"])),
-.fi-ta-content-ctn:has(.fi-ta-header-filter-cell .fi-fo-date-time-picker-panel:not([style*="display: none"])),
-.fi-ta-content-ctn:has(.fi-ta-header-filter-cell [x-ref="panel"]:not([style*="display: none"])),
-.fi-ta-content:has(.fi-ta-header-filter-cell .fi-dropdown-panel:not([style*="display: none"])),
-.fi-ta-content:has(.fi-ta-header-filter-cell .fi-fo-date-time-picker-panel:not([style*="display: none"])),
-.fi-ta-content:has(.fi-ta-header-filter-cell [x-ref="panel"]:not([style*="display: none"])),
-.fi-ta-ctn:has(.fi-ta-header-filter-cell .fi-dropdown-panel:not([style*="display: none"])),
-.fi-ta-ctn:has(.fi-ta-header-filter-cell .fi-fo-date-time-picker-panel:not([style*="display: none"])),
-.fi-ta-ctn:has(.fi-ta-header-filter-cell [x-ref="panel"]:not([style*="display: none"])) {
-    overflow: visible !important;
 }
 
 .fi-ta-header-filter .fi-fo-date-time-picker-panel,
