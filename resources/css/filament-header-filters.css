@@ -46,12 +46,12 @@ tr:has(> .fi-ta-header-filter-cell) {
 .fi-ta-header-filter .fi-select-input-btn,
 .fi-ta-header-filter select.fi-select-input {
     width: auto;
-    min-width: 12rem;
+    min-width: 4rem;
 }
 
 .fi-ta-header-filter .fi-select-input .fi-dropdown-panel {
     width: max-content;
-    min-width: 4rem;
+    min-width: 12rem;
     max-width: min(24rem, calc(100vw - 2rem)) !important;
 }
 
