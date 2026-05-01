@@ -31,14 +31,24 @@ class ListOrders extends ListRecords
 
 ### Styles
 
-If your panel uses a custom Vite theme (`->viteTheme(...)`), import the plugin CSS into your `theme.css` so Tailwind's build pipeline picks it up and cascade order is correct:
+Add the package stylesheet to the panel theme configured with `->viteTheme(...)`. Place it after Filament's theme import so it can adjust the table and header filter styles:
 
 ```css
 @import '../../../../vendor/filament/filament/resources/css/theme.css';
-@import '../../../../vendor/leek/filament-header-filters/resources/dist/filament-header-filters.css';
+@import '../../../../vendor/leek/filament-header-filters/resources/css/filament-header-filters.css';
 ```
 
-Then rebuild: `npm run build`. If you don't use a custom theme, the plugin's CSS loads automatically via `FilamentAsset`.
+Then rebuild your app assets:
+
+```bash
+npm run build
+```
+
+If you are using Vite locally, restart or keep running:
+
+```bash
+npm run dev
+```
 
 ## Usage
 

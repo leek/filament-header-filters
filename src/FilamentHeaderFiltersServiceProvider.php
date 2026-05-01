@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Leek\FilamentHeaderFilters;
 
-use Filament\Support\Assets\Css;
-use Filament\Support\Facades\FilamentAsset;
 use Illuminate\Contracts\Foundation\Application;
 use Leek\FilamentHeaderFilters\Macros\RegisterMacros;
 use Spatie\LaravelPackageTools\Package;
@@ -27,10 +25,6 @@ class FilamentHeaderFiltersServiceProvider extends PackageServiceProvider
         RegisterMacros::register();
 
         $this->prependFilamentTableView();
-
-        FilamentAsset::register([
-            Css::make('filament-header-filters', __DIR__.'/../resources/dist/filament-header-filters.css'),
-        ], static::$name);
     }
 
     protected function prependFilamentTableView(): void
