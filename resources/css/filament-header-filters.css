@@ -31,7 +31,7 @@ tr:has(> .fi-ta-header-filter-cell) {
 .fi-ta-header-filter .fi-input-wrp,
 .fi-ta-header-filter .fi-fo-select,
 .fi-ta-header-filter .fi-select-input {
-    width: max-content;
+    width: 100%;
     max-width: 100%;
 }
 
