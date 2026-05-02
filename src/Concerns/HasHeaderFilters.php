@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Leek\FilamentHeaderFilters\Concerns;
 
 use Filament\Forms\Components\Field;
+use Filament\Forms\Components\Select;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Schema;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -18,10 +19,25 @@ use Filament\Tables\Table;
  */
 trait HasHeaderFilters
 {
+    protected bool $hasRegisteredHeaderFilters = false;
+
     public function bootedHasHeaderFilters(): void
     {
-        $table = $this->getTable();
+        $this->registerTableHeaderFilters();
+    }
 
+    public function renderingHasHeaderFilters(): void
+    {
+        $this->registerTableHeaderFilters();
+    }
+
+    protected function registerTableHeaderFilters(): void
+    {
+        if ($this->hasRegisteredHeaderFilters || (! $this->hasInitializedTableForHeaderFilters())) {
+            return;
+        }
+
+        $table = $this->getTable();
         $headerFilters = [];
 
         foreach ($table->getColumns() as $column) {
@@ -37,6 +53,8 @@ trait HasHeaderFilters
         }
 
         if (empty($headerFilters)) {
+            $this->hasRegisteredHeaderFilters = true;
+
             return;
         }
 
@@ -50,6 +68,13 @@ trait HasHeaderFilters
         );
 
         $this->seedHeaderFilterState($headerFilters);
+
+        $this->hasRegisteredHeaderFilters = true;
+    }
+
+    protected function hasInitializedTableForHeaderFilters(): bool
+    {
+        return isset($this->table);
     }
 
     /**
@@ -61,19 +86,26 @@ trait HasHeaderFilters
 
         foreach ($headerFilters as $filter) {
             $filterName = $filter->getName();
+            $state = $this->tableFilters[$filterName] ?? [];
 
-            if (array_key_exists($filterName, $this->tableFilters)) {
-                continue;
+            if (! is_array($state)) {
+                $state = [];
             }
-
-            $state = [];
 
             foreach ($filter->getSchemaComponents() as $component) {
                 if (! $component instanceof Field) {
                     continue;
                 }
 
-                $state[$component->getName()] = $component->getDefaultState();
+                $fieldName = $component->getName();
+
+                if (! array_key_exists($fieldName, $state)) {
+                    $state[$fieldName] = $component->getDefaultState();
+                }
+
+                if ($component instanceof Select && (! $component->isMultiple()) && is_array($state[$fieldName])) {
+                    $state[$fieldName] = null;
+                }
             }
 
             $this->tableFilters[$filterName] = $state;
