@@ -18,6 +18,20 @@ tr:has(> .fi-ta-header-filter-cell) {
     max-width: 100%;
 }
 
+.fi-ta-header-filter-cell:has(.fi-select-input-ctn-clearable) .fi-ta-header-filter {
+    width: max-content;
+}
+
+.fi-ta-header-filter .fi-select-input .fi-select-input-value-ctn {
+    flex-wrap: nowrap;
+    text-wrap: nowrap;
+    word-break: normal;
+}
+
+.fi-ta-header-filter .fi-select-input .fi-select-input-value-label {
+    white-space: nowrap;
+}
+
 .fi-ta-header-filter .fi-fo-field-wrp {
     margin-block: 0;
 }
