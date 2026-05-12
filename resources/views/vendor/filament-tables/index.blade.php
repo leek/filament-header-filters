@@ -14,6 +14,7 @@
     use Filament\Tables\Enums\RecordCheckboxPosition;
     use Filament\Tables\View\TablesRenderHook;
     use Illuminate\Support\Str;
+
     use Illuminate\View\ComponentAttributeBag;
 
     $defaultRecordActions = $getRecordActions();
@@ -92,8 +93,7 @@
     $isGroupingDirectionSettingHidden = $isGroupingDirectionSettingHidden();
     $areGroupsCollapsedByDefault = $areGroupsCollapsedByDefault();
     $areGroupingSettingsInDropdownOnDesktop = $areGroupingSettingsInDropdownOnDesktop();
-    $isColumnSearchVisible = $isSearchableByColumn() || method_exists($table, 'hasHeaderFilters') && $table->hasHeaderFilters();
-    $isGlobalSearchVisible = $isSearchable();
+    $isColumnSearchVisible = $isSearchableByColumn() || ((method_exists($table, 'hasHeaderFilters') || (method_exists($table, 'hasMacro') && $table->hasMacro('hasHeaderFilters'))) && $table->hasHeaderFilters());    $isGlobalSearchVisible = $isSearchable();
     $isSearchOnBlur = $isSearchOnBlur();
     $isSelectionEnabled = $isSelectionEnabled() && (! $isGroupsOnly);
     $selectsCurrentPageOnly = $selectsCurrentPageOnly();
