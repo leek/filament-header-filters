@@ -92,3 +92,83 @@ tr:has(> .fi-ta-header-filter-cell) {
     z-index: 50 !important;
     isolation: isolate;
 }
+
+/*
+ * Multi-select header filters.
+ *
+ * A multi-select renders one `.fi-badge` per selection inside
+ * `.fi-select-input-value-badges-ctn`. In a narrow header column those badges
+ * wrap character-by-character and blow up the row height. Collapse them to a
+ * single line: widen the column, ellipsise the first label, and surface the
+ * rest as a "+N" overflow count.
+ */
+
+/* Widen the column once a multi-select carries a selection. */
+.fi-ta-header-filter-cell:has(.fi-select-input-value-badges-ctn) {
+    min-width: 16rem;
+}
+
+/* The `.fi-select-input-ctn-clearable` rule above shrinks clearable selects to
+   `max-content`; for a multi-select that collapses the trigger (and every
+   wrapper down to the badge container) around the badges, leaving no room for
+   the first label. Keep the whole chain at full column width instead. */
+.fi-ta-header-filter-cell:has(.fi-select-input-value-badges-ctn) .fi-ta-header-filter,
+.fi-ta-header-filter-cell:has(.fi-select-input-value-badges-ctn) .fi-select-input-ctn,
+.fi-ta-header-filter-cell:has(.fi-select-input-value-badges-ctn) .fi-select-input-btn,
+.fi-ta-header-filter-cell:has(.fi-select-input-value-badges-ctn) .fi-select-input-value-ctn {
+    width: 100% !important;
+    min-width: 0 !important;
+}
+
+.fi-ta-header-filter .fi-select-input-value-badges-ctn {
+    width: 100%;
+    min-width: 0;
+    flex-grow: 1;
+    flex-wrap: nowrap;
+    overflow: hidden;
+    counter-reset: header-filter-overflow;
+}
+
+/* The first selected badge grows to fill the column and ellipsises its label,
+   so it stays readable instead of collapsing to a one-character sliver. */
+.fi-ta-header-filter .fi-select-input-value-badges-ctn > .fi-badge:first-child,
+.fi-ta-header-filter .fi-select-input-value-badges-ctn > .fi-badge:first-child .fi-badge-label-ctn {
+    min-width: 0;
+    flex: 1 1 0%;
+}
+
+.fi-ta-header-filter .fi-select-input-value-badges-ctn > .fi-badge:first-child .fi-badge-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    word-break: normal;
+}
+
+/* Keep the overflow badges in the box model so they still increment the counter
+   — `display: none` would drop them from the count — but visually collapse them
+   out of the row. */
+.fi-ta-header-filter .fi-select-input-value-badges-ctn > .fi-badge:nth-child(n + 2) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    counter-increment: header-filter-overflow;
+}
+
+/* Surface the hidden badges as a compact "+N". */
+.fi-ta-header-filter .fi-select-input-value-badges-ctn:has(> .fi-badge:nth-child(2))::after {
+    content: '+' counter(header-filter-overflow);
+    align-self: center;
+    flex-shrink: 0;
+    margin-inline-start: 0.25rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 500;
+    color: rgb(107 114 128); /* gray-500 */
+}
+
+.dark .fi-ta-header-filter .fi-select-input-value-badges-ctn:has(> .fi-badge:nth-child(2))::after {
+    color: rgb(156 163 175); /* gray-400 */
+}
