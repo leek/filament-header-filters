@@ -11,6 +11,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Filters\BaseFilter;
 use Filament\Tables\Table;
+use Leek\FilamentHeaderFilters\Support\HeaderFilterRegistry;
 
 /**
  * @property-read Schema $tableHeaderFiltersForm
@@ -19,8 +20,6 @@ use Filament\Tables\Table;
  */
 trait HasHeaderFilters
 {
-    protected bool $hasRegisteredHeaderFilters = false;
-
     public function bootedHasHeaderFilters(): void
     {
         $this->registerTableHeaderFilters();
@@ -33,11 +32,19 @@ trait HasHeaderFilters
 
     protected function registerTableHeaderFilters(): void
     {
-        if ($this->hasRegisteredHeaderFilters || (! $this->hasInitializedTableForHeaderFilters())) {
+        if (! $this->hasInitializedTableForHeaderFilters()) {
             return;
         }
 
         $table = $this->getTable();
+
+        // Registration is tracked per Table instance, not via a once-per-request flag:
+        // resetTable() rebuilds the table from scratch (a new instance) and drops the
+        // filters pushed below, so a flag would leave them selected but un-applied.
+        if (HeaderFilterRegistry::isTableRegistered($table)) {
+            return;
+        }
+
         $headerFilters = [];
 
         foreach ($table->getColumns() as $column) {
@@ -53,7 +60,7 @@ trait HasHeaderFilters
         }
 
         if (empty($headerFilters)) {
-            $this->hasRegisteredHeaderFilters = true;
+            HeaderFilterRegistry::markTableRegistered($table);
 
             return;
         }
@@ -69,7 +76,7 @@ trait HasHeaderFilters
 
         $this->seedHeaderFilterState($headerFilters);
 
-        $this->hasRegisteredHeaderFilters = true;
+        HeaderFilterRegistry::markTableRegistered($table);
     }
 
     protected function hasInitializedTableForHeaderFilters(): bool

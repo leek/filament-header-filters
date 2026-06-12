@@ -6,6 +6,7 @@ namespace Leek\FilamentHeaderFilters\Support;
 
 use Filament\Tables\Columns\Column;
 use Filament\Tables\Filters\BaseFilter;
+use Filament\Tables\Table;
 use WeakMap;
 
 class HeaderFilterRegistry
@@ -15,6 +16,9 @@ class HeaderFilterRegistry
 
     /** @var WeakMap<BaseFilter, string>|null */
     protected static ?WeakMap $filterColumnNames = null;
+
+    /** @var WeakMap<Table, true>|null */
+    protected static ?WeakMap $registeredTables = null;
 
     public static function setColumnFilter(Column $column, ?BaseFilter $filter): void
     {
@@ -55,5 +59,17 @@ class HeaderFilterRegistry
     public static function getFilterColumnName(BaseFilter $filter): ?string
     {
         return self::$filterColumnNames[$filter] ?? null;
+    }
+
+    public static function markTableRegistered(Table $table): void
+    {
+        self::$registeredTables ??= new WeakMap;
+
+        self::$registeredTables[$table] = true;
+    }
+
+    public static function isTableRegistered(Table $table): bool
+    {
+        return isset(self::$registeredTables[$table]);
     }
 }
