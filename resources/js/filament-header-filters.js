@@ -24,6 +24,9 @@
         let measurementRoot = null;
         let mutationObserver = null;
         let resizeObserver = null;
+        let observedBody = null;
+        let lifecycleListenersRegistered = false;
+        let livewireHookRegistered = false;
 
         function ensureOverflowBadge(container) {
             let overflowBadge = container.querySelector(`:scope > .${overflowBadgeClass}`);
@@ -149,25 +152,29 @@
         }
 
         function getMeasurementRoot() {
-            if (measurementRoot) {
+            if (!document.body) {
                 return measurementRoot;
             }
 
-            measurementRoot = document.createElement('div');
-            measurementRoot.setAttribute('aria-hidden', 'true');
-            measurementRoot.dataset.filamentResponsiveBadgeOverflowMeasurer = 'true';
-            measurementRoot.style.position = 'fixed';
-            measurementRoot.style.visibility = 'hidden';
-            measurementRoot.style.pointerEvents = 'none';
-            measurementRoot.style.inset = '0 auto auto 0';
-            measurementRoot.style.width = 'max-content';
-            measurementRoot.style.maxWidth = 'none';
-            measurementRoot.style.height = 'auto';
-            measurementRoot.style.overflow = 'visible';
-            measurementRoot.style.contain = 'layout style';
-            measurementRoot.style.whiteSpace = 'nowrap';
+            if (!measurementRoot) {
+                measurementRoot = document.createElement('div');
+                measurementRoot.setAttribute('aria-hidden', 'true');
+                measurementRoot.dataset.filamentResponsiveBadgeOverflowMeasurer = 'true';
+                measurementRoot.style.position = 'fixed';
+                measurementRoot.style.visibility = 'hidden';
+                measurementRoot.style.pointerEvents = 'none';
+                measurementRoot.style.inset = '0 auto auto 0';
+                measurementRoot.style.width = 'max-content';
+                measurementRoot.style.maxWidth = 'none';
+                measurementRoot.style.height = 'auto';
+                measurementRoot.style.overflow = 'visible';
+                measurementRoot.style.contain = 'layout style';
+                measurementRoot.style.whiteSpace = 'nowrap';
+            }
 
-            document.body.appendChild(measurementRoot);
+            if (measurementRoot.parentElement !== document.body) {
+                document.body.appendChild(measurementRoot);
+            }
 
             return measurementRoot;
         }
@@ -300,6 +307,8 @@
         }
 
         function updateAll() {
+            observeBody();
+
             const containers = new Set();
 
             selectors.forEach((selector) => {
@@ -316,6 +325,32 @@
             });
         }
 
+        function observeBody() {
+            if (!document.body) {
+                return;
+            }
+
+            getMeasurementRoot();
+
+            mutationObserver ??= new MutationObserver((records) => {
+                const onlyMeasured = records.every((record) => {
+                    return record.target === measurementRoot || measurementRoot?.contains(record.target);
+                });
+
+                if (!onlyMeasured) {
+                    schedule();
+                }
+            });
+
+            if (observedBody === document.body) {
+                return;
+            }
+
+            mutationObserver.disconnect();
+            mutationObserver.observe(document.body, { childList: true, subtree: true });
+            observedBody = document.body;
+        }
+
         function schedule() {
             if (isScheduled) {
                 return;
@@ -329,39 +364,40 @@
             });
         }
 
-        function start() {
-            if (mutationObserver) {
+        function scheduleAfterNavigation() {
+            observeBody();
+            schedule();
+            window.requestAnimationFrame(schedule);
+            window.setTimeout(schedule, 50);
+        }
+
+        function registerLivewireHook() {
+            if (livewireHookRegistered || typeof window.Livewire?.hook !== 'function') {
                 return;
             }
 
+            window.Livewire.hook('morph.updated', schedule);
+            livewireHookRegistered = true;
+        }
+
+        function start() {
             if (!document.body) {
                 document.addEventListener('DOMContentLoaded', start, { once: true });
 
                 return;
             }
 
-            resizeObserver = typeof ResizeObserver === 'function' ? new ResizeObserver(schedule) : null;
-            getMeasurementRoot();
+            resizeObserver ??= typeof ResizeObserver === 'function' ? new ResizeObserver(schedule) : null;
+            observeBody();
 
-            mutationObserver = new MutationObserver((records) => {
-                const onlyMeasured = records.every((record) => {
-                    return record.target === measurementRoot || measurementRoot?.contains(record.target);
-                });
+            if (lifecycleListenersRegistered) {
+                return;
+            }
 
-                if (!onlyMeasured) {
-                    schedule();
-                }
-            });
-            mutationObserver.observe(document.body, { childList: true, subtree: true });
-
-            document.addEventListener('livewire:navigated', schedule);
-
-            const registerLivewireHook = () => {
-                window.Livewire?.hook?.('morph.updated', schedule);
-            };
-
+            document.addEventListener('livewire:navigated', scheduleAfterNavigation);
             document.addEventListener('livewire:init', registerLivewireHook);
             registerLivewireHook();
+            lifecycleListenersRegistered = true;
         }
 
         return {
