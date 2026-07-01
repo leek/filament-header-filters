@@ -172,10 +172,11 @@
             return measurementRoot;
         }
 
-        function measureNaturalWidth(element) {
+        function measureNaturalWidth(element, configureClone = null) {
             const clone = element.cloneNode(true);
 
             clone.classList.remove(hiddenBadgeClass);
+            configureClone?.(clone);
             clone.style.position = 'static';
             clone.style.visibility = 'hidden';
             clone.style.pointerEvents = 'none';
@@ -192,6 +193,16 @@
             clone.remove();
 
             return width;
+        }
+
+        function measureOverflowBadgeWidth(overflowBadge, overflowCount) {
+            return measureNaturalWidth(overflowBadge, (clone) => {
+                const label = clone.querySelector('.fi-badge-label');
+
+                if (label) {
+                    label.textContent = `+${overflowCount}`;
+                }
+            });
         }
 
         function getColumnGap(container) {
@@ -216,11 +227,7 @@
                 const overflowCount = badges.length - visibleCount;
                 const itemCount = visibleCount + (overflowCount > 0 ? 1 : 0);
 
-                if (overflowCount > 0) {
-                    updateOverflowBadge(overflowBadge, overflowCount);
-                }
-
-                const overflowWidth = overflowCount > 0 ? measureNaturalWidth(overflowBadge) : 0;
+                const overflowWidth = overflowCount > 0 ? measureOverflowBadgeWidth(overflowBadge, overflowCount) : 0;
                 const width = sumWidths(badgeWidths, visibleCount) + overflowWidth + Math.max(0, itemCount - 1) * gap;
 
                 if (width <= availableWidth) {
