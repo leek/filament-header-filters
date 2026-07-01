@@ -121,6 +121,24 @@
             }
         }
 
+        function setOverflowBadgeWidth(container, overflowBadge, isEnabled) {
+            const valueContainer = container.parentElement?.classList.contains('fi-select-input-value-ctn')
+                ? container.parentElement
+                : null;
+
+            if (!isEnabled) {
+                container.style.removeProperty('--fi-select-input-overflow-badge-width');
+                valueContainer?.style.removeProperty('--fi-select-input-overflow-badge-width');
+
+                return;
+            }
+
+            const width = `${measureNaturalWidth(overflowBadge)}px`;
+
+            container.style.setProperty('--fi-select-input-overflow-badge-width', width);
+            valueContainer?.style.setProperty('--fi-select-input-overflow-badge-width', width);
+        }
+
         function getMeasurementRoot() {
             if (measurementRoot) {
                 return measurementRoot;
@@ -218,6 +236,7 @@
             if (badges.length <= 1) {
                 badges.forEach((badge) => setBadgeHidden(badge, false));
                 setOverflowBadgeHidden(overflowBadge, true);
+                setOverflowBadgeWidth(container, overflowBadge, false);
                 container.classList.remove(hasOverflowClass);
                 container.removeAttribute('data-overflow-count');
 
@@ -241,6 +260,7 @@
 
             if (overflowCount <= 0) {
                 setOverflowBadgeHidden(overflowBadge, true);
+                setOverflowBadgeWidth(container, overflowBadge, false);
                 container.classList.remove(hasOverflowClass);
                 container.removeAttribute('data-overflow-count');
 
@@ -248,6 +268,7 @@
             }
 
             updateOverflowBadge(overflowBadge, overflowCount);
+            setOverflowBadgeWidth(container, overflowBadge, true);
 
             const lastVisibleBadge = badges[visibleCount - 1];
 

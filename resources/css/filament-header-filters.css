@@ -120,6 +120,10 @@ tr:has(> .fi-ta-header-filter-cell) {
     min-width: 0 !important;
 }
 
+.fi-ta-header-filter .fi-select-input-value-ctn:has(> .fi-select-input-value-badges-ctn.fi-select-input-has-overflow-badge) {
+    min-width: var(--fi-select-input-overflow-badge-width, 2rem) !important;
+}
+
 .fi-ta-header-filter .fi-select-input-value-badges-ctn {
     width: 100%;
     min-width: 0;
