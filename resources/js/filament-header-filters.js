@@ -128,6 +128,20 @@
             }
         }
 
+        function clearOverflowCount(container) {
+            if (container.hasAttribute('data-overflow-count')) {
+                container.removeAttribute('data-overflow-count');
+            }
+        }
+
+        function setOverflowCount(container, overflowCount) {
+            const value = String(overflowCount);
+
+            if (container.dataset.overflowCount !== value) {
+                container.dataset.overflowCount = value;
+            }
+        }
+
         function setOverflowBadgeWidth(container, overflowBadge, isEnabled) {
             const valueContainer = container.parentElement?.classList.contains('fi-select-input-value-ctn')
                 ? container.parentElement
@@ -261,7 +275,7 @@
                 setOverflowBadgeHidden(overflowBadge, true);
                 setOverflowBadgeWidth(container, overflowBadge, false);
                 container.classList.remove(hasOverflowClass);
-                container.removeAttribute('data-overflow-count');
+                clearOverflowCount(container);
 
                 return;
             }
@@ -285,7 +299,7 @@
                 setOverflowBadgeHidden(overflowBadge, true);
                 setOverflowBadgeWidth(container, overflowBadge, false);
                 container.classList.remove(hasOverflowClass);
-                container.removeAttribute('data-overflow-count');
+                clearOverflowCount(container);
 
                 return;
             }
@@ -303,7 +317,7 @@
 
             setOverflowBadgeHidden(overflowBadge, false);
             container.classList.add(hasOverflowClass);
-            container.dataset.overflowCount = String(overflowCount);
+            setOverflowCount(container, overflowCount);
         }
 
         function updateAll() {
