@@ -129,13 +129,16 @@
             measurementRoot = document.createElement('div');
             measurementRoot.setAttribute('aria-hidden', 'true');
             measurementRoot.dataset.filamentResponsiveBadgeOverflowMeasurer = 'true';
-            measurementRoot.style.position = 'absolute';
+            measurementRoot.style.position = 'fixed';
             measurementRoot.style.visibility = 'hidden';
             measurementRoot.style.pointerEvents = 'none';
             measurementRoot.style.inset = '0 auto auto 0';
             measurementRoot.style.width = 'max-content';
-            measurementRoot.style.height = '0';
-            measurementRoot.style.overflow = 'hidden';
+            measurementRoot.style.maxWidth = 'none';
+            measurementRoot.style.height = 'auto';
+            measurementRoot.style.overflow = 'visible';
+            measurementRoot.style.contain = 'layout style';
+            measurementRoot.style.whiteSpace = 'nowrap';
 
             document.body.appendChild(measurementRoot);
 
@@ -146,7 +149,7 @@
             const clone = element.cloneNode(true);
 
             clone.classList.remove(hiddenBadgeClass);
-            clone.style.position = 'absolute';
+            clone.style.position = 'static';
             clone.style.visibility = 'hidden';
             clone.style.pointerEvents = 'none';
             clone.style.width = 'max-content';
