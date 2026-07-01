@@ -203,7 +203,7 @@
                 return badges.length;
             }
 
-            for (let visibleCount = badges.length; visibleCount >= 1; visibleCount--) {
+            for (let visibleCount = badges.length; visibleCount >= 0; visibleCount--) {
                 const overflowCount = badges.length - visibleCount;
                 const itemCount = visibleCount + (overflowCount > 0 ? 1 : 0);
 
@@ -214,12 +214,12 @@
                 const overflowWidth = overflowCount > 0 ? measureNaturalWidth(overflowBadge) : 0;
                 const width = sumWidths(badgeWidths, visibleCount) + overflowWidth + Math.max(0, itemCount - 1) * gap;
 
-                if (width <= availableWidth || visibleCount === 1) {
+                if (width <= availableWidth) {
                     return visibleCount;
                 }
             }
 
-            return 1;
+            return 0;
         }
 
         function updateContainer(container) {
@@ -274,6 +274,8 @@
 
             if (lastVisibleBadge && overflowBadge.previousElementSibling !== lastVisibleBadge) {
                 lastVisibleBadge.after(overflowBadge);
+            } else if (!lastVisibleBadge && badges[0] && overflowBadge.nextElementSibling !== badges[0]) {
+                badges[0].before(overflowBadge);
             }
 
             setOverflowBadgeHidden(overflowBadge, false);
