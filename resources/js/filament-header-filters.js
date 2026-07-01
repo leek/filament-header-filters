@@ -142,6 +142,12 @@
             }
         }
 
+        function setClassEnabled(element, className, isEnabled) {
+            if (element.classList.contains(className) !== isEnabled) {
+                element.classList.toggle(className, isEnabled);
+            }
+        }
+
         function setOverflowBadgeWidth(container, overflowBadge, isEnabled) {
             const valueContainer = container.parentElement?.classList.contains('fi-select-input-value-ctn')
                 ? container.parentElement
@@ -264,7 +270,7 @@
                 return;
             }
 
-            container.classList.add(containerClass);
+            setClassEnabled(container, containerClass, true);
 
             const badges = Array.from(container.querySelectorAll(':scope > .fi-badge'))
                 .filter((badge) => !badge.classList.contains(overflowBadgeClass));
@@ -274,7 +280,7 @@
                 badges.forEach((badge) => setBadgeHidden(badge, false));
                 setOverflowBadgeHidden(overflowBadge, true);
                 setOverflowBadgeWidth(container, overflowBadge, false);
-                container.classList.remove(hasOverflowClass);
+                setClassEnabled(container, hasOverflowClass, false);
                 clearOverflowCount(container);
 
                 return;
@@ -298,7 +304,7 @@
             if (overflowCount <= 0) {
                 setOverflowBadgeHidden(overflowBadge, true);
                 setOverflowBadgeWidth(container, overflowBadge, false);
-                container.classList.remove(hasOverflowClass);
+                setClassEnabled(container, hasOverflowClass, false);
                 clearOverflowCount(container);
 
                 return;
@@ -316,7 +322,7 @@
             }
 
             setOverflowBadgeHidden(overflowBadge, false);
-            container.classList.add(hasOverflowClass);
+            setClassEnabled(container, hasOverflowClass, true);
             setOverflowCount(container, overflowCount);
         }
 
