@@ -58,7 +58,11 @@
                 label.textContent = text;
             }
 
-            overflowBadge.setAttribute('aria-label', `${overflowCount} more selected`);
+            const ariaLabel = `${overflowCount} more selected`;
+
+            if (overflowBadge.getAttribute('aria-label') !== ariaLabel) {
+                overflowBadge.setAttribute('aria-label', ariaLabel);
+            }
         }
 
         function restoreRemoveButton(removeButton) {
@@ -135,8 +139,13 @@
 
             const width = `${measureNaturalWidth(overflowBadge)}px`;
 
-            container.style.setProperty('--fi-select-input-overflow-badge-width', width);
-            valueContainer?.style.setProperty('--fi-select-input-overflow-badge-width', width);
+            if (container.style.getPropertyValue('--fi-select-input-overflow-badge-width') !== width) {
+                container.style.setProperty('--fi-select-input-overflow-badge-width', width);
+            }
+
+            if (valueContainer?.style.getPropertyValue('--fi-select-input-overflow-badge-width') !== width) {
+                valueContainer?.style.setProperty('--fi-select-input-overflow-badge-width', width);
+            }
         }
 
         function getMeasurementRoot() {
