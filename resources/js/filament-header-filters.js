@@ -78,8 +78,15 @@
         }
 
         function setBadgeHidden(badge, isHidden) {
-            badge.classList.toggle(hiddenBadgeClass, isHidden);
-            badge.toggleAttribute('aria-hidden', isHidden);
+            const wasHidden = badge.classList.contains(hiddenBadgeClass);
+
+            if (wasHidden !== isHidden) {
+                badge.classList.toggle(hiddenBadgeClass, isHidden);
+            }
+
+            if (badge.hasAttribute('aria-hidden') !== isHidden) {
+                badge.toggleAttribute('aria-hidden', isHidden);
+            }
 
             badge.querySelectorAll('.fi-badge-delete-btn').forEach((removeButton) => {
                 if (isHidden) {
@@ -87,7 +94,9 @@
                         removeButton.dataset.responsiveOverflowTabIndex = removeButton.getAttribute('tabindex') ?? '';
                     }
 
-                    removeButton.setAttribute('tabindex', '-1');
+                    if (removeButton.getAttribute('tabindex') !== '-1') {
+                        removeButton.setAttribute('tabindex', '-1');
+                    }
 
                     return;
                 }
@@ -97,10 +106,17 @@
         }
 
         function setOverflowBadgeHidden(overflowBadge, isHidden) {
-            overflowBadge.classList.toggle(hiddenBadgeClass, isHidden);
-            overflowBadge.toggleAttribute('aria-hidden', isHidden);
+            const wasHidden = overflowBadge.classList.contains(hiddenBadgeClass);
 
-            if (isHidden) {
+            if (wasHidden !== isHidden) {
+                overflowBadge.classList.toggle(hiddenBadgeClass, isHidden);
+            }
+
+            if (overflowBadge.hasAttribute('aria-hidden') !== isHidden) {
+                overflowBadge.toggleAttribute('aria-hidden', isHidden);
+            }
+
+            if (isHidden && overflowBadge.hasAttribute('aria-label')) {
                 overflowBadge.removeAttribute('aria-label');
             }
         }
@@ -196,17 +212,14 @@
                 .filter((badge) => !badge.classList.contains(overflowBadgeClass));
             const overflowBadge = ensureOverflowBadge(container);
 
-            badges.forEach((badge) => setBadgeHidden(badge, false));
-
             if (badges.length <= 1) {
+                badges.forEach((badge) => setBadgeHidden(badge, false));
                 setOverflowBadgeHidden(overflowBadge, true);
                 container.classList.remove(hasOverflowClass);
                 container.removeAttribute('data-overflow-count');
 
                 return;
             }
-
-            setOverflowBadgeHidden(overflowBadge, true);
 
             const badgeWidths = badges.map((badge) => measureNaturalWidth(badge));
 

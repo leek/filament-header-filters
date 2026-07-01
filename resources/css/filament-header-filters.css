@@ -129,15 +129,21 @@ tr:has(> .fi-ta-header-filter-cell) {
 }
 
 .fi-ta-header-filter .fi-select-input-value-badges-ctn > .fi-badge {
-    flex-shrink: 0;
+    flex: 0 0 auto;
 }
 
 /* When overflow exists, the first visible badge may shrink and ellipsise so it
    stays readable instead of forcing the "+N" count out of the control. */
-.fi-ta-header-filter .fi-select-input-value-badges-ctn.fi-select-input-has-overflow-badge > .fi-badge:not(.fi-select-input-overflow-count-badge):first-child,
+.fi-ta-header-filter .fi-select-input-value-badges-ctn.fi-select-input-has-overflow-badge > .fi-badge:not(.fi-select-input-overflow-count-badge):first-child {
+    min-width: 0;
+    max-width: 100%;
+    flex: 0 1 auto;
+}
+
 .fi-ta-header-filter .fi-select-input-value-badges-ctn.fi-select-input-has-overflow-badge > .fi-badge:not(.fi-select-input-overflow-count-badge):first-child .fi-badge-label-ctn {
     min-width: 0;
-    flex: 1 1 0%;
+    max-width: 100%;
+    flex-shrink: 1;
 }
 
 .fi-ta-header-filter .fi-select-input-value-badges-ctn.fi-select-input-has-overflow-badge > .fi-badge:not(.fi-select-input-overflow-count-badge):first-child .fi-badge-label {
