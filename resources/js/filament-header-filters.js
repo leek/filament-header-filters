@@ -19,7 +19,11 @@
         const hiddenBadgeClass = 'fi-select-input-overflow-hidden-badge';
         const containerClass = 'fi-select-input-responsive-overflow';
         const hasOverflowClass = 'fi-select-input-has-overflow-badge';
+        const overflowClearButtonClass = 'fi-select-input-overflow-clear-btn';
+        const optionCheckboxClass = 'fi-select-input-option-checkbox';
+        const selectedOptionClass = 'fi-select-input-option-selected';
 
+        const selectRootSelectors = new Set();
         let isScheduled = false;
         let measurementRoot = null;
         let mutationObserver = null;
@@ -27,11 +31,16 @@
         let observedBody = null;
         let lifecycleListenersRegistered = false;
         let livewireHookRegistered = false;
+        const enhancedSelects = new WeakSet();
+        let measuredBadgeWidths = new WeakMap();
+        let measuredOverflowBadgeWidths = new WeakMap();
 
         function ensureOverflowBadge(container) {
             let overflowBadge = container.querySelector(`:scope > .${overflowBadgeClass}`);
 
             if (overflowBadge) {
+                ensureOverflowClearButton(container, overflowBadge);
+
                 return overflowBadge;
             }
 
@@ -47,10 +56,33 @@
                 hiddenBadgeClass,
             ].join(' ');
             overflowBadge.innerHTML = '<span class="fi-badge-label-ctn"><span class="fi-badge-label"></span></span>';
+            ensureOverflowClearButton(container, overflowBadge);
 
             container.appendChild(overflowBadge);
 
             return overflowBadge;
+        }
+
+        function ensureOverflowClearButton(container, overflowBadge) {
+            let clearButton = overflowBadge.querySelector(`:scope > .${overflowClearButtonClass}`);
+
+            if (clearButton) {
+                return clearButton;
+            }
+
+            clearButton = document.createElement('button');
+            clearButton.type = 'button';
+            clearButton.className = ['fi-badge-delete-btn', overflowClearButtonClass].join(' ');
+            clearButton.innerHTML = '<svg class="fi-icon fi-size-xs" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" data-slot="icon"><path d="M5.28 4.22a.75.75 0 0 0-1.06 1.06L6.94 8l-2.72 2.72a.75.75 0 1 0 1.06 1.06L8 9.06l2.72 2.72a.75.75 0 1 0 1.06-1.06L9.06 8l2.72-2.72a.75.75 0 0 0-1.06-1.06L8 6.94 5.28 4.22Z"></path></svg>';
+            clearButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                removeOverflowSelections(container);
+            });
+
+            overflowBadge.appendChild(clearButton);
+
+            return clearButton;
         }
 
         function updateOverflowBadge(overflowBadge, overflowCount) {
@@ -65,6 +97,13 @@
 
             if (overflowBadge.getAttribute('aria-label') !== ariaLabel) {
                 overflowBadge.setAttribute('aria-label', ariaLabel);
+            }
+
+            const clearButton = overflowBadge.querySelector(`:scope > .${overflowClearButtonClass}`);
+            const clearLabel = `Remove ${overflowCount} hidden selections`;
+
+            if (clearButton?.getAttribute('aria-label') !== clearLabel) {
+                clearButton?.setAttribute('aria-label', clearLabel);
             }
         }
 
@@ -126,6 +165,22 @@
             if (isHidden && overflowBadge.hasAttribute('aria-label')) {
                 overflowBadge.removeAttribute('aria-label');
             }
+
+            overflowBadge.querySelectorAll(`:scope > .${overflowClearButtonClass}`).forEach((clearButton) => {
+                if (isHidden) {
+                    if (!Object.prototype.hasOwnProperty.call(clearButton.dataset, 'responsiveOverflowTabIndex')) {
+                        clearButton.dataset.responsiveOverflowTabIndex = clearButton.getAttribute('tabindex') ?? '';
+                    }
+
+                    if (clearButton.getAttribute('tabindex') !== '-1') {
+                        clearButton.setAttribute('tabindex', '-1');
+                    }
+
+                    return;
+                }
+
+                restoreRemoveButton(clearButton);
+            });
         }
 
         function clearOverflowCount(container) {
@@ -146,6 +201,260 @@
             if (element.classList.contains(className) !== isEnabled) {
                 element.classList.toggle(className, isEnabled);
             }
+        }
+
+        function clearMeasurementCache() {
+            measuredBadgeWidths = new WeakMap();
+            measuredOverflowBadgeWidths = new WeakMap();
+        }
+
+        function getBadgeMeasurementSignature(badge) {
+            const className = Array.from(badge.classList)
+                .filter((className) => className !== hiddenBadgeClass)
+                .join(' ');
+
+            return `${className}|${badge.textContent ?? ''}`;
+        }
+
+        function valuesMatch(left, right) {
+            return String(left) === String(right);
+        }
+
+        function getAlpineData(element) {
+            if (!element) {
+                return null;
+            }
+
+            if (typeof window.Alpine?.$data === 'function') {
+                return window.Alpine.$data(element);
+            }
+
+            return element._x_dataStack?.[0] ?? null;
+        }
+
+        function getSelectFromRoot(root) {
+            return getAlpineData(root)?.select ?? null;
+        }
+
+        function getSelectForContainer(container) {
+            return getSelectFromRoot(container.closest('.fi-select-input'));
+        }
+
+        function getHiddenOverflowValues(container) {
+            return Array.from(
+                container.querySelectorAll(`:scope > .${hiddenBadgeClass}:not(.${overflowBadgeClass})[data-value]`),
+            ).map((badge) => badge.getAttribute('data-value'));
+        }
+
+        function removeOverflowSelections(container) {
+            const select = getSelectForContainer(container);
+            const valuesToRemove = getHiddenOverflowValues(container);
+
+            if (!select || !Array.isArray(select.state) || valuesToRemove.length === 0) {
+                return;
+            }
+
+            const nextState = select.state.filter((value) => {
+                return !valuesToRemove.some((valueToRemove) => valuesMatch(value, valueToRemove));
+            });
+
+            if (nextState.length === select.state.length) {
+                return;
+            }
+
+            select.state = nextState;
+
+            Promise.resolve(select.updateSelectedDisplay?.()).then(() => schedule());
+            select.renderOptions?.();
+
+            if (select.isOpen) {
+                select.deferPositionDropdown?.();
+            }
+
+            select.maintainFocusInMultipleMode?.();
+            select.onStateChange?.(select.state);
+        }
+
+        function hasAnyOptions(options) {
+            return options.some((option) => {
+                if (option.options && Array.isArray(option.options)) {
+                    return option.options.length > 0;
+                }
+
+                return true;
+            });
+        }
+
+        function decorateOptionElement(select, optionElement) {
+            if (!select.isMultiple) {
+                return;
+            }
+
+            const value = optionElement.getAttribute('data-value');
+            const isSelected = Array.isArray(select.state) && select.state.some((stateValue) => valuesMatch(stateValue, value));
+            let checkbox = optionElement.querySelector(`:scope > .${optionCheckboxClass}`);
+
+            if (!checkbox) {
+                checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = ['fi-checkbox-input', optionCheckboxClass].join(' ');
+                checkbox.tabIndex = -1;
+                checkbox.setAttribute('aria-hidden', 'true');
+                optionElement.prepend(checkbox);
+            }
+
+            checkbox.checked = isSelected;
+            optionElement.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+            optionElement.classList.toggle(selectedOptionClass, isSelected);
+        }
+
+        function renderOptionGroupWithSelectedOptions(select, label, options) {
+            if (options.length === 0) {
+                return;
+            }
+
+            const optionGroup = document.createElement('li');
+            optionGroup.className = 'fi-select-input-option-group';
+
+            const optionGroupLabel = document.createElement('div');
+            optionGroupLabel.className = 'fi-dropdown-header';
+            optionGroupLabel.textContent = label;
+
+            const groupOptionsList = document.createElement('ul');
+            groupOptionsList.className = 'fi-dropdown-list';
+
+            options.forEach((option) => {
+                const optionElement = select.createOptionElement(option.value, option);
+
+                decorateOptionElement(select, optionElement);
+                groupOptionsList.appendChild(optionElement);
+            });
+
+            optionGroup.appendChild(optionGroupLabel);
+            optionGroup.appendChild(groupOptionsList);
+            select.optionsList.appendChild(optionGroup);
+        }
+
+        function renderOptionsWithSelectedOptions() {
+            this.optionsList.innerHTML = '';
+
+            let totalRenderedCount = 0;
+            const optionsToRender = this.options;
+            let optionsCount = 0;
+            let hasGroupedOptions = false;
+
+            this.options.forEach((option) => {
+                if (option.options && Array.isArray(option.options)) {
+                    optionsCount += option.options.length;
+                    hasGroupedOptions = true;
+
+                    return;
+                }
+
+                optionsCount++;
+            });
+
+            if (hasGroupedOptions) {
+                this.optionsList.className = 'fi-select-input-options-ctn';
+            } else if (optionsCount > 0) {
+                this.optionsList.className = 'fi-dropdown-list';
+            }
+
+            let ungroupedList = hasGroupedOptions ? null : this.optionsList;
+            let renderedCount = 0;
+
+            for (const option of optionsToRender) {
+                if (this.optionsLimit > 0 && renderedCount >= this.optionsLimit) {
+                    break;
+                }
+
+                if (option.options && Array.isArray(option.options)) {
+                    let groupOptions = option.options;
+
+                    if (groupOptions.length > 0) {
+                        if (this.optionsLimit > 0) {
+                            const remainingSlots = this.optionsLimit - renderedCount;
+
+                            if (remainingSlots < groupOptions.length) {
+                                groupOptions = groupOptions.slice(0, remainingSlots);
+                            }
+                        }
+
+                        renderOptionGroupWithSelectedOptions(this, option.label, groupOptions);
+                        renderedCount += groupOptions.length;
+                        totalRenderedCount += groupOptions.length;
+                    }
+
+                    continue;
+                }
+
+                if (!ungroupedList && hasGroupedOptions) {
+                    ungroupedList = document.createElement('ul');
+                    ungroupedList.className = 'fi-dropdown-list';
+                    this.optionsList.appendChild(ungroupedList);
+                }
+
+                const optionElement = this.createOptionElement(option.value, option);
+
+                decorateOptionElement(this, optionElement);
+                ungroupedList.appendChild(optionElement);
+                renderedCount++;
+                totalRenderedCount++;
+            }
+
+            if (totalRenderedCount === 0) {
+                if (this.searchQuery) {
+                    this.showNoResultsMessage();
+                } else if (this.hasInitialNoOptionsMessage || this.hasDynamicOptions) {
+                    this.showNoOptionsMessage();
+                } else if (this.isMultiple && this.isOpen && !this.isSearchable) {
+                    this.closeDropdown();
+                }
+
+                if (this.optionsList.parentNode === this.dropdown) {
+                    this.dropdown.removeChild(this.optionsList);
+                }
+
+                return;
+            }
+
+            this.hideLoadingState();
+
+            if (this.optionsList.parentNode !== this.dropdown) {
+                this.dropdown.appendChild(this.optionsList);
+            }
+        }
+
+        function hasAvailableOptionsWithSelectedOptions() {
+            return hasAnyOptions(this.options);
+        }
+
+        function isSelectEnhanced(select) {
+            return enhancedSelects.has(select)
+                && select.renderOptions === renderOptionsWithSelectedOptions
+                && select.hasAvailableOptions === hasAvailableOptionsWithSelectedOptions;
+        }
+
+        function enhanceSelect(select) {
+            if (!select?.isMultiple || isSelectEnhanced(select)) {
+                return;
+            }
+
+            select.renderOptions = renderOptionsWithSelectedOptions;
+            select.hasAvailableOptions = hasAvailableOptionsWithSelectedOptions;
+
+            enhancedSelects.add(select);
+            select.renderOptions();
+        }
+
+        function enhanceSelectRoot(root) {
+            enhanceSelect(getSelectFromRoot(root));
+        }
+
+        function enhanceSelects() {
+            selectRootSelectors.forEach((selector) => {
+                document.querySelectorAll(selector).forEach(enhanceSelectRoot);
+            });
         }
 
         function setOverflowBadgeWidth(container, overflowBadge, isEnabled) {
@@ -222,14 +531,45 @@
             return width;
         }
 
+        function measureBadgeWidth(badge) {
+            const signature = getBadgeMeasurementSignature(badge);
+            const cachedMeasurement = measuredBadgeWidths.get(badge);
+
+            if (cachedMeasurement?.signature === signature) {
+                return cachedMeasurement.width;
+            }
+
+            const width = measureNaturalWidth(badge);
+
+            measuredBadgeWidths.set(badge, { signature, width });
+
+            return width;
+        }
+
         function measureOverflowBadgeWidth(overflowBadge, overflowCount) {
-            return measureNaturalWidth(overflowBadge, (clone) => {
+            const signature = `${getBadgeMeasurementSignature(overflowBadge)}|overflow:${overflowCount}`;
+            let cachedMeasurements = measuredOverflowBadgeWidths.get(overflowBadge);
+
+            if (!cachedMeasurements) {
+                cachedMeasurements = new Map();
+                measuredOverflowBadgeWidths.set(overflowBadge, cachedMeasurements);
+            }
+
+            if (cachedMeasurements.has(signature)) {
+                return cachedMeasurements.get(signature);
+            }
+
+            const width = measureNaturalWidth(overflowBadge, (clone) => {
                 const label = clone.querySelector('.fi-badge-label');
 
                 if (label) {
                     label.textContent = `+${overflowCount}`;
                 }
             });
+
+            cachedMeasurements.set(signature, width);
+
+            return width;
         }
 
         function getColumnGap(container) {
@@ -238,11 +578,17 @@
             return Number.parseFloat(style.columnGap || style.gap) || 0;
         }
 
-        function sumWidths(widths, count) {
-            return widths.slice(0, count).reduce((total, width) => total + width, 0);
+        function getWidthSums(widths) {
+            const sums = [0];
+
+            widths.forEach((width) => {
+                sums.push(sums[sums.length - 1] + width);
+            });
+
+            return sums;
         }
 
-        function calculateVisibleCount(container, badges, overflowBadge, badgeWidths) {
+        function calculateVisibleCount(container, badges, overflowBadge, badgeWidthSums) {
             const availableWidth = Math.floor(container.clientWidth);
             const gap = getColumnGap(container);
 
@@ -255,7 +601,7 @@
                 const itemCount = visibleCount + (overflowCount > 0 ? 1 : 0);
 
                 const overflowWidth = overflowCount > 0 ? measureOverflowBadgeWidth(overflowBadge, overflowCount) : 0;
-                const width = sumWidths(badgeWidths, visibleCount) + overflowWidth + Math.max(0, itemCount - 1) * gap;
+                const width = badgeWidthSums[visibleCount] + overflowWidth + Math.max(0, itemCount - 1) * gap;
 
                 if (width <= availableWidth) {
                     return visibleCount;
@@ -286,14 +632,14 @@
                 return;
             }
 
-            const badgeWidths = badges.map((badge) => measureNaturalWidth(badge));
+            const badgeWidthSums = getWidthSums(badges.map((badge) => measureBadgeWidth(badge)));
 
-            let visibleCount = calculateVisibleCount(container, badges, overflowBadge, badgeWidths);
+            let visibleCount = calculateVisibleCount(container, badges, overflowBadge, badgeWidthSums);
             let overflowCount = badges.length - visibleCount;
 
             if (overflowCount > 0) {
                 updateOverflowBadge(overflowBadge, overflowCount);
-                visibleCount = calculateVisibleCount(container, badges, overflowBadge, badgeWidths);
+                visibleCount = calculateVisibleCount(container, badges, overflowBadge, badgeWidthSums);
                 overflowCount = badges.length - visibleCount;
             }
 
@@ -328,6 +674,7 @@
 
         function updateAll() {
             observeBody();
+            enhanceSelects();
 
             const containers = new Set();
 
@@ -336,6 +683,7 @@
             });
 
             containers.forEach((container) => {
+                enhanceSelect(getSelectForContainer(container));
                 updateContainer(container);
 
                 if (resizeObserver && !observedContainers.has(container)) {
@@ -353,11 +701,7 @@
             getMeasurementRoot();
 
             mutationObserver ??= new MutationObserver((records) => {
-                const onlyMeasured = records.every((record) => {
-                    return record.target === measurementRoot || measurementRoot?.contains(record.target);
-                });
-
-                if (!onlyMeasured) {
+                if (records.some(shouldScheduleForMutation)) {
                     schedule();
                 }
             });
@@ -369,6 +713,46 @@
             mutationObserver.disconnect();
             mutationObserver.observe(document.body, { childList: true, subtree: true });
             observedBody = document.body;
+        }
+
+        function touchesRegisteredSelector(element, includeDescendants = false) {
+            for (const selectorSet of [selectors, selectRootSelectors]) {
+                for (const selector of selectorSet) {
+                    if (element.matches(selector) || element.closest(selector)) {
+                        return true;
+                    }
+
+                    if (includeDescendants && element.querySelector(selector)) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        function shouldScheduleForMutation(record) {
+            if (record.target === measurementRoot || measurementRoot?.contains(record.target)) {
+                return false;
+            }
+
+            const target = record.target instanceof HTMLElement ? record.target : record.target.parentElement;
+
+            if (target && touchesRegisteredSelector(target)) {
+                return true;
+            }
+
+            return [...record.addedNodes, ...record.removedNodes].some((node) => {
+                if (!(node instanceof HTMLElement)) {
+                    return false;
+                }
+
+                if (node === measurementRoot || measurementRoot?.contains(node)) {
+                    return false;
+                }
+
+                return touchesRegisteredSelector(node, true);
+            });
         }
 
         function schedule() {
@@ -407,7 +791,12 @@
                 return;
             }
 
-            resizeObserver ??= typeof ResizeObserver === 'function' ? new ResizeObserver(schedule) : null;
+            resizeObserver ??= typeof ResizeObserver === 'function'
+                ? new ResizeObserver(() => {
+                    clearMeasurementCache();
+                    schedule();
+                })
+                : null;
             observeBody();
 
             if (lifecycleListenersRegistered) {
@@ -421,8 +810,13 @@
         }
 
         return {
-            register(selector) {
+            register(selector, selectRootSelector = null) {
                 selectors.add(selector);
+
+                if (selectRootSelector) {
+                    selectRootSelectors.add(selectRootSelector);
+                }
+
                 start();
                 schedule();
             },
@@ -431,5 +825,11 @@
     }
 
     window[namespace] = window[namespace] || createResponsiveBadgeOverflow();
-    window[namespace].register('.fi-ta-header-filter .fi-select-input-value-badges-ctn');
+    window[namespace].register(
+        '.fi-ta-header-filter .fi-select-input-value-badges-ctn',
+        '.fi-ta-header-filter .fi-select-input',
+    );
+    window.dispatchEvent(new CustomEvent('filament-responsive-badge-overflow:ready', {
+        detail: { overflow: window[namespace] },
+    }));
 })();

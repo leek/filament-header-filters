@@ -173,5 +173,32 @@ tr:has(> .fi-ta-header-filter-cell) {
 
 .fi-ta-header-filter .fi-select-input-value-badges-ctn > .fi-select-input-overflow-count-badge {
     flex-shrink: 0;
+    pointer-events: auto;
+}
+
+.fi-ta-header-filter .fi-select-input-option:hover {
+    cursor: pointer;
+}
+
+.fi-ta-header-filter .fi-select-input-option > .fi-select-input-option-checkbox {
+    flex-shrink: 0;
+    margin: 0;
     pointer-events: none;
+}
+
+.fi-ta-header-filter .fi-select-input-option:hover > .fi-select-input-option-checkbox {
+    cursor: pointer;
+}
+
+.fi-ta-header-filter .fi-select-input-option > span:not(.fi-select-input-option-checkbox) {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.fi-ta-header-filter .fi-select-input-option.fi-select-input-option-selected {
+    color: var(--color-primary-700);
+}
+
+.fi-ta-header-filter .fi-select-input-option.fi-select-input-option-selected > .fi-select-input-option-checkbox {
+    color: var(--color-primary-600);
 }
