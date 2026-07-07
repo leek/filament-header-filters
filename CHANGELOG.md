@@ -2,6 +2,11 @@
 
 All notable changes to `filament-header-filters` will be documented in this file.
 
+## v2.0.21 - 2026-07-07
+
+### Fixed
+- **Placeholder / value overlapping the chevron** — In a narrow header column, a single-line select placeholder or value longer than the available width overflowed the button's reserved chevron padding and rendered *under* the dropdown caret. The value container now clips its overflow and the value label / placeholder ellipsise, so the text stays clear of the caret.
+
 ## v2.0.19 - 2026-07-02
 
 ### Fixed

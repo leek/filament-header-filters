@@ -26,9 +26,23 @@ tr:has(> .fi-ta-header-filter-cell) {
     flex-wrap: nowrap;
     text-wrap: nowrap;
     word-break: normal;
+    min-width: 0;
+    overflow: hidden;
 }
 
-.fi-ta-header-filter .fi-select-input .fi-select-input-value-label {
+/*
+ * The trigger button reserves room for the chevron (and clear button) via its
+ * padding (`pe-8` / `pe-14`). A single-line value or placeholder longer than the
+ * remaining width overflows that padding and renders *under* the chevron in a
+ * narrow header column. Constrain both to the value container and ellipsise
+ * instead of letting the text slide beneath the caret.
+ */
+.fi-ta-header-filter .fi-select-input .fi-select-input-value-label,
+.fi-ta-header-filter .fi-select-input .fi-select-input-placeholder {
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
 }
 
