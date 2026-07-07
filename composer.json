@@ -33,6 +33,10 @@
         "pestphp/pest": "^3.0 || ^4.0",
         "pestphp/pest-plugin-laravel": "^3.0 || ^4.0"
     },
+    "suggest": {
+        "leek/filament-ui-plus": "Horizontal-scroll tables, dual sub-navigation, loading bar, and more UI enhancements.",
+        "leek/filament-right-click": "Right-click context menus for the tables you filter."
+    },
     "autoload": {
         "psr-4": {
             "Leek\\FilamentHeaderFilters\\": "src/"
