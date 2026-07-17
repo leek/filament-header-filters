@@ -69,6 +69,16 @@ trait HasHeaderFilters
 
         $this->hideHeaderFilterGroupsFromPanelForm($table);
 
+        // bootedInteractsWithTable() cached the panel filters form BEFORE the
+        // header filters were pushed, so that cached schema has no groups for
+        // them — which silently breaks Filament's removeTableFilter() (the
+        // filter indicator's remove button). Re-cache it now that the table
+        // knows about every filter.
+        $this->cacheSchema(
+            'tableFiltersForm',
+            $this->getTableFiltersForm(...),
+        );
+
         $this->cacheSchema(
             'tableHeaderFiltersForm',
             $this->getTableHeaderFiltersForm(...),
@@ -160,7 +170,11 @@ trait HasHeaderFilters
                 $filter = $table->getFilter($filterName);
 
                 if ($filter instanceof BaseFilter && $filter->isHeaderFilter()) {
-                    $group->hidden()->dense();
+                    // CSS-hide instead of schema-hide: a schema-hidden group is
+                    // skipped by getComponentByStatePath(), which turns Filament's
+                    // removeTableFilter() into a no-op — the filter indicator's
+                    // remove button could never clear a header filter's state.
+                    $group->extraAttributes(['style' => 'display: none'], merge: true)->dense();
                 }
             }
 

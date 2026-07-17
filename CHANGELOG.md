@@ -2,6 +2,11 @@
 
 All notable changes to `filament-header-filters` will be documented in this file.
 
+## v2.0.23 - 2026-07-17
+
+### Fixed
+- **Filter indicator remove button was a no-op** — Removing a header filter via the ✕ on its "Active filters" indicator badge never cleared the filter's state, so the filter (including any `->default()`) could not be dismissed. Two causes: Filament caches the panel filters form in `bootedInteractsWithTable()` *before* the header filters are pushed onto the table, so `removeTableFilter()` looked the filter up in a schema that didn't contain it; and the panel-form groups for header filters were schema-`hidden()`, which also makes them invisible to `getComponentByStatePath()`. The panel filters form is now re-cached after header filters register, and their panel groups are CSS-hidden instead of schema-hidden so Filament can find and reset their fields.
+
 ## v2.0.21 - 2026-07-07
 
 ### Fixed
