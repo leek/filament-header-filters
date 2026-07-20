@@ -216,3 +216,23 @@ tr:has(> .fi-ta-header-filter-cell) {
 .fi-ta-header-filter .fi-select-input-option.fi-select-input-option-selected > .fi-select-input-option-checkbox {
     color: var(--color-primary-600);
 }
+
+/*
+ * HasHeaderFilters::hideHeaderFilterGroupsFromPanelForm() CSS-hides each header
+ * filter's Group inside the table's own filters form (the dropdown/modal opened
+ * from the "Filters" trigger, not the header filter cell) by setting
+ * `style="display: none"` on it — intentionally a CSS-hide rather than a
+ * schema-hide, so `removeTableFilter()` can still find the component by its
+ * state path.
+ *
+ * That inline style only reaches the Group itself. Filament's schema renderer
+ * wraps every top-level schema component in its own `.fi-grid-col` grid item,
+ * and that wrapper is untouched — it still occupies a grid row and consumes a
+ * `row-gap`, even though its content has zero height. With several header
+ * filters on a table, these empty rows stack up and push the panel's "Apply
+ * filters" button down by a visible, unexplained gap. Hide the wrapper too.
+ */
+.fi-ta-filters-dropdown .fi-grid-col:has(> .fi-sc-component > [style*="display: none"]),
+.fi-ta-filters-modal .fi-grid-col:has(> .fi-sc-component > [style*="display: none"]) {
+    display: none;
+}
