@@ -2,6 +2,11 @@
 
 All notable changes to `filament-header-filters` will be documented in this file.
 
+## v2.0.24 - 2026-07-20
+
+### Fixed
+- **Empty grid rows in the table filters panel** — The v2.0.23 fix CSS-hides each header filter's `Group` inside the table's own filters form, but Filament's schema renderer wraps every top-level schema component in its own `.fi-grid-col` grid item, which still occupied a grid row (and a `row-gap`) per header filter. With several `withHeaderFilter()` columns, these empty rows pushed the "Apply filters" button down by a large, unexplained gap. New CSS rules — scoped to Filament's filters wrappers across every layout (dropdown, modal, and above/below/before/after-content) — now hide the empty `.fi-grid-col` wrapper too. No PHP changes, so `removeTableFilter()` keeps working as fixed in v2.0.23. (#5, thanks @x-adam)
+
 ## v2.0.23 - 2026-07-17
 
 ### Fixed
