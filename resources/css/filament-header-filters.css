@@ -216,3 +216,37 @@ tr:has(> .fi-ta-header-filter-cell) {
 .fi-ta-header-filter .fi-select-input-option.fi-select-input-option-selected > .fi-select-input-option-checkbox {
     color: var(--color-primary-600);
 }
+
+/*
+ * HasHeaderFilters::hideHeaderFilterGroupsFromPanelForm() CSS-hides each header
+ * filter's Group inside the table's own filters form (the dropdown/modal/above-
+ * or-below-content panel opened from the "Filters" trigger, not the header
+ * filter cell) by setting `style="display: none"` on it — intentionally a
+ * CSS-hide rather than a schema-hide, so `removeTableFilter()` can still find
+ * the component by its state path.
+ *
+ * That inline style only reaches the Group itself. Filament's schema renderer
+ * wraps every top-level schema component in its own `.fi-grid-col` grid item,
+ * and that wrapper is untouched — it still occupies a grid row and consumes a
+ * `row-gap`, even though its content has zero height. With several header
+ * filters on a table, these empty rows stack up and push the panel's "Apply
+ * filters" button down by a visible, unexplained gap. Hide the wrapper too.
+ *
+ * `.fi-ta-filters` is the base class `<x-filament-tables::filters>` always
+ * renders, regardless of layout (dropdown, above/below/before/after-content),
+ * so targeting it covers every layout that uses that component. The Modal
+ * layout is the one exception — it echoes the filters form directly without
+ * that wrapper — so `.fi-ta-filters-modal` is matched separately.
+ *
+ * The attribute selector chains `[style*="display"][style*="none"]` (rather
+ * than `[style*="display: none"]`) so it still matches if a minifier collapses
+ * the inline style to `display:none`, and matches the style landing on either
+ * `.fi-sc-component` itself or its immediate child, since that placement isn't
+ * guaranteed to be stable across Filament versions.
+ */
+.fi-ta-filters .fi-grid-col:has(> .fi-sc-component[style*="display"][style*="none"]),
+.fi-ta-filters .fi-grid-col:has(> .fi-sc-component > [style*="display"][style*="none"]),
+.fi-ta-filters-modal .fi-grid-col:has(> .fi-sc-component[style*="display"][style*="none"]),
+.fi-ta-filters-modal .fi-grid-col:has(> .fi-sc-component > [style*="display"][style*="none"]) {
+    display: none;
+}
