@@ -11,6 +11,16 @@ tr:has(> .fi-ta-header-filter-cell) {
     z-index: 20;
 }
 
+/*
+ * Table toolbar dropdowns (e.g. column toggle / manager and table-level filters)
+ * render from `.fi-ta-header-ctn` which precedes the table in the DOM. Elevate
+ * the header container above header filter rows so their open panels are not obscured.
+ */
+.fi-ta-header-ctn {
+    position: relative;
+    z-index: 30;
+}
+
 .fi-ta-header-filter {
     display: inline-block;
     width: 100%;
