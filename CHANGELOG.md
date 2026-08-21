@@ -2,10 +2,10 @@
 
 All notable changes to `filament-header-filters` will be documented in this file.
 
-## Unreleased
+## v2.0.25 - 2026-08-21
 
 ### Fixed
-- **Table toolbar dropdowns rendered beneath header filters** — Because header filter cells and rows use `z-index: 20` to stack above body rows, dropdowns from the preceding table header toolbar (`.fi-ta-header-ctn`), such as the column toggle/manager or table-level filter menus, were layered underneath header filter inputs. The table header container is now elevated to `z-index: 30` with `position: relative`.
+- **Table toolbar dropdowns rendered beneath header filters** — Because header filter cells and rows use `z-index: 20` to stack above body rows, dropdowns from the preceding table header toolbar (`.fi-ta-header-ctn`), such as the column toggle/manager or table-level filter menus, were layered underneath header filter inputs. The table header container is now elevated to `z-index: 30` with `position: relative`. (#7, thanks @mdepablo)
 
 ## v2.0.24 - 2026-07-20
 
