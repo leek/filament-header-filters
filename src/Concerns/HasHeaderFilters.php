@@ -174,7 +174,9 @@ trait HasHeaderFilters
                     // skipped by getComponentByStatePath(), which turns Filament's
                     // removeTableFilter() into a no-op — the filter indicator's
                     // remove button could never clear a header filter's state.
-                    $group->extraAttributes(['style' => 'display: none'], merge: true)->dense();
+                    // The class lets the stylesheet hide the group's grid wrapper
+                    // without matching on the style attribute (see the CSS note).
+                    $group->extraAttributes(['class' => 'fi-ta-header-filter-panel-group', 'style' => 'display: none'], merge: true)->dense();
                 }
             }
 

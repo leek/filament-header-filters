@@ -248,15 +248,17 @@ tr:has(> .fi-ta-header-filter-cell) {
  * layout is the one exception — it echoes the filters form directly without
  * that wrapper — so `.fi-ta-filters-modal` is matched separately.
  *
- * The attribute selector chains `[style*="display"][style*="none"]` (rather
- * than `[style*="display: none"]`) so it still matches if a minifier collapses
- * the inline style to `display:none`, and matches the style landing on either
- * `.fi-sc-component` itself or its immediate child, since that placement isn't
- * guaranteed to be stable across Filament versions.
+ * The wrapper is matched through the `.fi-ta-header-filter-panel-group` class
+ * the Group carries, never through its `style` attribute: `:has()` with a
+ * `[style*=…]` argument makes Blink re-style the ancestor chain — from body
+ * down, the whole document — on EVERY inline style write anywhere on the page
+ * (each Alpine x-show, transition, or tooltip cost ~90ms on a large board).
+ * The class may land on `.fi-sc-component` itself or its immediate child, since
+ * that placement isn't guaranteed to be stable across Filament versions.
  */
-.fi-ta-filters .fi-grid-col:has(> .fi-sc-component[style*="display"][style*="none"]),
-.fi-ta-filters .fi-grid-col:has(> .fi-sc-component > [style*="display"][style*="none"]),
-.fi-ta-filters-modal .fi-grid-col:has(> .fi-sc-component[style*="display"][style*="none"]),
-.fi-ta-filters-modal .fi-grid-col:has(> .fi-sc-component > [style*="display"][style*="none"]) {
+.fi-ta-filters .fi-grid-col:has(> .fi-sc-component.fi-ta-header-filter-panel-group),
+.fi-ta-filters .fi-grid-col:has(> .fi-sc-component > .fi-ta-header-filter-panel-group),
+.fi-ta-filters-modal .fi-grid-col:has(> .fi-sc-component.fi-ta-header-filter-panel-group),
+.fi-ta-filters-modal .fi-grid-col:has(> .fi-sc-component > .fi-ta-header-filter-panel-group) {
     display: none;
 }

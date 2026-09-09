@@ -2,6 +2,11 @@
 
 All notable changes to `filament-header-filters` will be documented in this file.
 
+## v2.0.26 - 2026-09-09
+
+### Fixed
+- **Every inline style write on the page forced a full-document style recalculation** — The v2.0.24 rule that hides a header filter's empty `.fi-grid-col` wrapper in the filters panel matched the Group through `:has(> .fi-sc-component[style*="display"][style*="none"])`. Blink services `:has()` arguments keyed on the `style` attribute by re-styling the ancestor chain of *any* element whose inline style changes — from `body`, the whole document — so each Alpine `x-show`, transition, tooltip or notification init cost ~90ms on a large page (a 100-card kanban board froze for ~9s while its notification bell loaded 50 rows). The hidden Group now also carries a `fi-ta-header-filter-panel-group` class and the wrapper rule matches that class instead; the inline `display: none` stays, so `removeTableFilter()` behaviour is unchanged.
+
 ## v2.0.25 - 2026-08-21
 
 ### Fixed
