@@ -429,6 +429,54 @@
             return hasAnyOptions(this.options);
         }
 
+        /**
+         * Toggling an option rebuilds the list, which resets the dropdown's
+         * scroll, and Filament then focuses the first selected option because
+         * it expects selected options to leave the list. Keep the scroll
+         * position and focus the option that was toggled instead.
+         */
+        function wrapSelectOption(select) {
+            const selectOption = select.selectOption;
+            const maintainFocusInMultipleMode = select.maintainFocusInMultipleMode;
+            let toggledValue = null;
+
+            select.selectOption = function (value) {
+                const scrollTop = this.dropdown?.scrollTop ?? 0;
+
+                toggledValue = value;
+
+                try {
+                    selectOption.call(this, value);
+                } finally {
+                    toggledValue = null;
+                }
+
+                if (this.dropdown) {
+                    this.dropdown.scrollTop = scrollTop;
+                }
+            };
+
+            select.maintainFocusInMultipleMode = function () {
+                if (toggledValue === null || (this.isSearchable && this.searchInput)) {
+                    return maintainFocusInMultipleMode.call(this);
+                }
+
+                const options = this.getVisibleOptions();
+                const index = options.findIndex((option) => valuesMatch(option.getAttribute('data-value'), toggledValue));
+
+                if (index === -1) {
+                    return maintainFocusInMultipleMode.call(this);
+                }
+
+                this.selectedIndex = index;
+                options[index].focus({ preventScroll: true });
+
+                if (options[index].id) {
+                    this.dropdown.setAttribute('aria-activedescendant', options[index].id);
+                }
+            };
+        }
+
         function isSelectEnhanced(select) {
             return enhancedSelects.has(select)
                 && select.renderOptions === renderOptionsWithSelectedOptions
@@ -438,6 +486,10 @@
         function enhanceSelect(select) {
             if (!select?.isMultiple || isSelectEnhanced(select)) {
                 return;
+            }
+
+            if (!enhancedSelects.has(select)) {
+                wrapSelectOption(select);
             }
 
             select.renderOptions = renderOptionsWithSelectedOptions;

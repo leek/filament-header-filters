@@ -2,6 +2,11 @@
 
 All notable changes to `filament-header-filters` will be documented in this file.
 
+## v2.0.27 - 2026-10-09
+
+### Fixed
+- **Checking a multi-select option scrolled the dropdown back to the top** — The checkbox enhancement keeps selected options in the list, but toggling one rebuilt the list (resetting the dropdown's scroll) and Filament's `maintainFocusInMultipleMode()` then focused — and scrolled to — the *first* selected option, since it expects selected options to leave the list. Toggling now keeps the dropdown's scroll position and focuses the option that was toggled.
+
 ## v2.0.26 - 2026-09-09
 
 ### Fixed
