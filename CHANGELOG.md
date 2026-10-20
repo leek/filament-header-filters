@@ -2,6 +2,15 @@
 
 All notable changes to `filament-header-filters` will be documented in this file.
 
+## v3.0.0 - 2026-10-20
+
+### Breaking
+- **Requires Filament v5.10.x (v5.10.3 or later)** — The package replaces Filament's `filament-tables::index` view with a copy that adds the header filter row. Filament changes that view in almost every release, so one copy can't serve every version. v3 ships a copy of the v5.10.3 view and requires `filament/filament: ~5.10.3`. Stay on v2.x for Filament v4.x and earlier v5.x versions.
+
+### Fixed
+- **Tables lost every table view feature added since Filament v5.4** — The v2.x view was a copy of Filament v5.4's, so on newer Filament versions every table (with or without header filters) lost `loadingSkeleton()` markup, the filters panel's Reset button (the filters component now takes a `resetAction` prop) and the v5.10 reorder accessibility. The new copy keeps all of it. Its `data-search-hidden-at` breakpoint calculation also counts header filter columns, so the column search row isn't hidden on tables whose header filter columns have no individual search, and ignores hidden header filters. (#9, thanks @zvizvi)
+- **Multi-select header filters went blank after a search with no results** — The checkbox enhancement replaced Filament's `renderOptions()` with an older copy that never un-hid the options list, so on Filament v5.10 the dropdown stayed empty (and keyboard navigation stopped) after a no-results search, a loading state or an async search. It now calls Filament's own `renderOptions()` with selected options kept in the list, and the old focus workaround is removed because Filament v5.10 keeps focus on the button or search input itself.
+
 ## v2.0.27 - 2026-10-09
 
 ### Fixed

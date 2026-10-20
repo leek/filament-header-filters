@@ -275,16 +275,6 @@
             select.onStateChange?.(select.state);
         }
 
-        function hasAnyOptions(options) {
-            return options.some((option) => {
-                if (option.options && Array.isArray(option.options)) {
-                    return option.options.length > 0;
-                }
-
-                return true;
-            });
-        }
-
         function decorateOptionElement(select, optionElement) {
             if (!select.isMultiple) {
                 return;
@@ -308,179 +298,48 @@
             optionElement.classList.toggle(selectedOptionClass, isSelected);
         }
 
-        function renderOptionGroupWithSelectedOptions(select, label, options) {
-            if (options.length === 0) {
-                return;
-            }
-
-            const optionGroup = document.createElement('li');
-            optionGroup.className = 'fi-select-input-option-group';
-
-            const optionGroupLabel = document.createElement('div');
-            optionGroupLabel.className = 'fi-dropdown-header';
-            optionGroupLabel.textContent = label;
-
-            const groupOptionsList = document.createElement('ul');
-            groupOptionsList.className = 'fi-dropdown-list';
-
-            options.forEach((option) => {
-                const optionElement = select.createOptionElement(option.value, option);
-
-                decorateOptionElement(select, optionElement);
-                groupOptionsList.appendChild(optionElement);
-            });
-
-            optionGroup.appendChild(optionGroupLabel);
-            optionGroup.appendChild(groupOptionsList);
-            select.optionsList.appendChild(optionGroup);
-        }
-
+        /**
+         * Filament's `renderOptions()` leaves selected options out of the list
+         * in multiple mode. Render it with an empty state so they stay, then
+         * restore the state and mark them as checked.
+         */
         function renderOptionsWithSelectedOptions() {
-            this.optionsList.innerHTML = '';
+            const state = this.state;
 
-            let totalRenderedCount = 0;
-            const optionsToRender = this.options;
-            let optionsCount = 0;
-            let hasGroupedOptions = false;
+            this.state = [];
 
-            this.options.forEach((option) => {
-                if (option.options && Array.isArray(option.options)) {
-                    optionsCount += option.options.length;
-                    hasGroupedOptions = true;
-
-                    return;
-                }
-
-                optionsCount++;
-            });
-
-            if (hasGroupedOptions) {
-                this.optionsList.className = 'fi-select-input-options-ctn';
-            } else if (optionsCount > 0) {
-                this.optionsList.className = 'fi-dropdown-list';
+            try {
+                Object.getPrototypeOf(this).renderOptions.call(this);
+            } finally {
+                this.state = state;
             }
 
-            let ungroupedList = hasGroupedOptions ? null : this.optionsList;
-            let renderedCount = 0;
-
-            for (const option of optionsToRender) {
-                if (this.optionsLimit > 0 && renderedCount >= this.optionsLimit) {
-                    break;
-                }
-
-                if (option.options && Array.isArray(option.options)) {
-                    let groupOptions = option.options;
-
-                    if (groupOptions.length > 0) {
-                        if (this.optionsLimit > 0) {
-                            const remainingSlots = this.optionsLimit - renderedCount;
-
-                            if (remainingSlots < groupOptions.length) {
-                                groupOptions = groupOptions.slice(0, remainingSlots);
-                            }
-                        }
-
-                        renderOptionGroupWithSelectedOptions(this, option.label, groupOptions);
-                        renderedCount += groupOptions.length;
-                        totalRenderedCount += groupOptions.length;
-                    }
-
-                    continue;
-                }
-
-                if (!ungroupedList && hasGroupedOptions) {
-                    ungroupedList = document.createElement('ul');
-                    ungroupedList.className = 'fi-dropdown-list';
-                    this.optionsList.appendChild(ungroupedList);
-                }
-
-                const optionElement = this.createOptionElement(option.value, option);
-
+            this.optionsList.querySelectorAll('[role="option"]').forEach((optionElement) => {
                 decorateOptionElement(this, optionElement);
-                ungroupedList.appendChild(optionElement);
-                renderedCount++;
-                totalRenderedCount++;
-            }
-
-            if (totalRenderedCount === 0) {
-                if (this.searchQuery) {
-                    this.showNoResultsMessage();
-                } else if (this.hasInitialNoOptionsMessage || this.hasDynamicOptions) {
-                    this.showNoOptionsMessage();
-                } else if (this.isMultiple && this.isOpen && !this.isSearchable) {
-                    this.closeDropdown();
-                }
-
-                if (this.optionsList.parentNode === this.dropdown) {
-                    this.dropdown.removeChild(this.optionsList);
-                }
-
-                return;
-            }
-
-            this.hideLoadingState();
-
-            if (this.optionsList.parentNode !== this.dropdown) {
-                this.dropdown.appendChild(this.optionsList);
-            }
-        }
-
-        function hasAvailableOptionsWithSelectedOptions() {
-            return hasAnyOptions(this.options);
+            });
         }
 
         /**
          * Toggling an option rebuilds the list, which resets the dropdown's
-         * scroll, and Filament then focuses the first selected option because
-         * it expects selected options to leave the list. Keep the scroll
-         * position and focus the option that was toggled instead.
+         * scroll. Keep the scroll position.
          */
         function wrapSelectOption(select) {
             const selectOption = select.selectOption;
-            const maintainFocusInMultipleMode = select.maintainFocusInMultipleMode;
-            let toggledValue = null;
 
             select.selectOption = function (value) {
                 const scrollTop = this.dropdown?.scrollTop ?? 0;
 
-                toggledValue = value;
-
-                try {
-                    selectOption.call(this, value);
-                } finally {
-                    toggledValue = null;
-                }
+                selectOption.call(this, value);
 
                 if (this.dropdown) {
                     this.dropdown.scrollTop = scrollTop;
-                }
-            };
-
-            select.maintainFocusInMultipleMode = function () {
-                if (toggledValue === null || (this.isSearchable && this.searchInput)) {
-                    return maintainFocusInMultipleMode.call(this);
-                }
-
-                const options = this.getVisibleOptions();
-                const index = options.findIndex((option) => valuesMatch(option.getAttribute('data-value'), toggledValue));
-
-                if (index === -1) {
-                    return maintainFocusInMultipleMode.call(this);
-                }
-
-                this.selectedIndex = index;
-                options[index].focus({ preventScroll: true });
-
-                if (options[index].id) {
-                    this.dropdown.setAttribute('aria-activedescendant', options[index].id);
                 }
             };
         }
 
         function isSelectEnhanced(select) {
             return enhancedSelects.has(select)
-                && select.renderOptions === renderOptionsWithSelectedOptions
-                && select.hasAvailableOptions === hasAvailableOptionsWithSelectedOptions;
+                && select.renderOptions === renderOptionsWithSelectedOptions;
         }
 
         function enhanceSelect(select) {
@@ -493,7 +352,6 @@
             }
 
             select.renderOptions = renderOptionsWithSelectedOptions;
-            select.hasAvailableOptions = hasAvailableOptionsWithSelectedOptions;
 
             enhancedSelects.add(select);
             select.renderOptions();
