@@ -9,7 +9,9 @@ Inline header filters for [Filament](https://filamentphp.com/) tables. Attach an
 ## Requirements
 
 - PHP 8.2+
-- Filament v4.x or v5.x
+- Filament v5.10.x (from v5.10.3)
+
+The package replaces Filament's table view with a copy that adds the header filter row, so each release supports one Filament minor version. For Filament v4.x and earlier v5.x versions, use v2.x of this package.
 
 ## Installation
 
