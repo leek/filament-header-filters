@@ -2,6 +2,11 @@
 
 All notable changes to `filament-header-filters` will be documented in this file.
 
+## Unreleased
+
+### Fixed
+- **Tables on Filament v5.10.2+ lost every table view feature added since v5.4** — The table view override is a copy of Filament v5.4's `index.blade.php`, so `loadingSkeleton()` never rendered, the filters panel had no Reset button (the filters component now takes it as a `resetAction` prop), and the v5.10 reorder accessibility was missing. Filament v5.10.2 and later now get a copy of the v5.10.2 view with the same header filter edits. Filament 4.x and v5.0–v5.10.1 keep the existing copy. The 5.10 view's `data-search-hidden-at` breakpoint calculation also counts header filter columns, so the row is not hidden on tables whose header filter columns have no individual search.
+
 ## v2.0.27 - 2026-10-09
 
 ### Fixed
