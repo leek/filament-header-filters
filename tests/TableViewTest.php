@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Composer\InstalledVersions;
 use Filament\Actions\ActionsServiceProvider;
 use Filament\Forms\FormsServiceProvider;
 use Filament\Infolists\InfolistsServiceProvider;
@@ -20,6 +21,28 @@ it('resolves the table view to the package copy', function (): void {
         ->toBe(realpath(__DIR__.'/../resources/views/vendor/filament-tables/index.blade.php'))
         ->and(realpath($finder->find('filament-tables::components.header-filter')))
         ->toBe(realpath(__DIR__.'/../resources/views/vendor/filament-tables/components/header-filter.blade.php'));
+});
+
+it('only differs from the installed Filament table view by the header filter edits', function (): void {
+    // `diff` lines prefixed `<` come from Filament's stock view. Any stock
+    // line beyond the ones the header filter edits replace means Filament
+    // changed the view and the copy needs re-syncing.
+    exec(sprintf(
+        'diff %s %s',
+        escapeshellarg(InstalledVersions::getInstallPath('filament/tables').'/resources/views/index.blade.php'),
+        escapeshellarg(__DIR__.'/../resources/views/vendor/filament-tables/index.blade.php'),
+    ), $output);
+
+    $replacedStockLines = array_values(array_map(
+        fn (string $line): string => trim(substr($line, 1)),
+        array_filter($output, fn (string $line): bool => str_starts_with($line, '<')),
+    ));
+
+    expect($output)->not->toBeEmpty()
+        ->and($replacedStockLines)->toBe([
+            '$isColumnSearchVisible = $isSearchableByColumn();',
+            "if (! \$columnState['isIndividuallySearchable']) {",
+        ]);
 });
 
 it('compiles the table view to valid PHP', function (): void {

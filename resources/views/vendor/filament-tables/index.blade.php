@@ -2053,7 +2053,7 @@
 
                                         foreach ($columns as $columnKey => $column) {
                                             $individualSearchColumnStates[$columnKey] = [
-                                                'hasHeaderFilter' => $column->hasHeaderFilter(),
+                                                'hasHeaderFilter' => $column->hasHeaderFilter() && $column->getHeaderFilter()->isVisible(),
                                                 'hiddenFrom' => $column->getHiddenFrom(),
                                                 'isIndividuallySearchable' => $column->isIndividuallySearchable(),
                                                 'visibleFrom' => $column->getVisibleFrom(),
