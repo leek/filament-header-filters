@@ -2,6 +2,14 @@
 
 All notable changes to `filament-header-filters` will be documented in this file.
 
+## v4.0.0 - 2026-10-28
+
+### Breaking
+- **Requires Filament v5.11.x** — The table view copy is re-synced to Filament v5.11.0's view, and the package requires `filament/filament: ~5.11.0`. Stay on v3.x for Filament v5.10.x.
+
+### Changed
+- **Table view picks up Filament v5.11's changes** — Record and column `wire:click` actions escape record keys with `Js::from()`, the filters and column manager modals pass `click-through` and `eyebrow`, and `table()` no longer receives `$wire` (Filament's table component reads `this.$wire` itself).
+
 ## v3.0.0 - 2026-10-20
 
 ### Breaking
